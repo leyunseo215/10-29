@@ -1,11 +1,12 @@
 import streamlit as st
 import random
 import time
+from datetime import datetime
 
-# 앱 설정
-st.set_page_config(page_title="한화이글스 우승기원🦅🔥", page_icon="🧡", layout="centered")
+# --- 설정 ---
+st.set_page_config(page_title="한화 응원 대폭발🦅🔥", page_icon="🧡", layout="centered")
 
-# 스타일
+# 스타일 (주황감성)
 st.markdown("""
     <style>
     body {
@@ -36,19 +37,31 @@ st.markdown("""
 # 제목
 st.markdown("""
     <h1 style='text-align:center; font-size:60px;'>
-        🧡🔥 한화이글스 2025 우승 가자앗!!! 🦅🍊🏆
+        🧡🔥 한화이글스 우승 향한 함성!! 🦅🍊🏆
     </h1>
-    <h3 style='text-align:center;'>🎆 팬들의 함성으로 대전을 불태우자 💥💪</h3>
+    <h3 style='text-align:center;'>팬들의 응원이 구장을 뒤흔든다 🎆</h3>
 """, unsafe_allow_html=True)
 
-# 세션 상태 초기화
-if "messages" not in st.session_state:
-    st.session_state["messages"] = []
+# --- 세션 상태 초기화 ---
 if "username" not in st.session_state:
     st.session_state["username"] = None
+if "messages" not in st.session_state:
+    st.session_state["messages"] = []
+if "cheer_power" not in st.session_state:
+    st.session_state["cheer_power"] = 0
 
-# 랜덤 팬 응원 멘트 리스트 (30개)
-random_fans = [
+# --- 우승 카운트다운 (예: 한국시리즈 첫 경기 날짜) ---
+# 원하는 날짜로 설정하면 돼
+target_date = datetime(2025, 10, 25)  # 예시
+now = datetime.now()
+delta = target_date - now
+days_left = delta.days if delta.days >= 0 else 0
+st.markdown(f"### 🏁 우승까지 D-{days_left}일 남았다!!")
+
+st.markdown("---")
+
+# --- 응원 문구 랜덤 추천 ---
+random_cheers = [
     "류현진 오늘 완봉 가자🔥", "정은원 홈런 예감🍊", "한화는 질 수 없다💪",
     "이글스는 살아있다🦅", "오늘도 불꽃 타선💥", "대전구장 불타오른다🔥",
     "팬심이 곧 승리다🏆", "우리의 봄은 오렌지색🌸", "끝까지 간다 한화💪",
@@ -60,8 +73,13 @@ random_fans = [
     "한화팬이라 행복하다😭", "류현진 믿는다🦅", "홈런쇼 기대중💪",
     "한화의 날씨는 항상 맑음☀️", "대전은 오늘도 오렌지빛🍊", "한화이글스 포레버🧡"
 ]
+if st.button("🎰 응원 문구 뽑기"):
+    cheer_pick = random.choice(random_cheers)
+    st.markdown(f"### 랜덤 추천 문구 → **{cheer_pick}**")
 
-# 닉네임 설정
+st.markdown("---")
+
+# --- 닉네임 설정 ---
 if not st.session_state["username"]:
     st.markdown("### 💬 먼저 닉네임(응원명)을 정해주세요!")
     username = st.text_input("닉네임을 입력:", placeholder="예: 불꽃한화팬123")
@@ -70,23 +88,15 @@ if not st.session_state["username"]:
             st.session_state["username"] = username
             st.success(f"환영합니다 {username}님! 🎉🔥")
             st.balloons()
-            st.rerun()
+            st.experimental_rerun()
 else:
     st.markdown(f"### 🧡 환영합니다, **{st.session_state['username']}** 님! 응원을 남겨주세요🔥")
-
     msg = st.text_input("🗣️ 응원 메시지:", placeholder="예: 류현진 믿는다!! 🦅🔥")
-
     if st.button("보내기 🚀"):
         if msg.strip():
             user = st.session_state["username"]
             st.session_state["messages"].append(f"{user}: {msg}")
-            
-            # 랜덤 팬글 1~3개 자동 추가
-            for _ in range(random.randint(1, 3)):
-                fake_user = f"팬{random.randint(1, 99)}"
-                fake_msg = random.choice(random_fans)
-                st.session_state["messages"].append(f"{fake_user}: {fake_msg}")
-
+            st.session_state["cheer_power"] += 1  # 응원력 +1
             st.balloons()
             emoji_list = ["🦅", "🔥", "🏆", "✨", "🍊", "💪", "🎆", "💥", "🧡", "🧨", "🎉"]
             emoji_rain = "".join(random.choices(emoji_list, k=random.randint(60, 120)))
@@ -95,12 +105,20 @@ else:
                 unsafe_allow_html=True,
             )
             time.sleep(0.5)
-            st.success("🔥 응원 완료! 팬심이 불타오른다!! 🦅")
+            st.success(f"🔥 응원 완료! 응원력: {st.session_state['cheer_power']}점")
 
-    # 피드 표시
+    # 응원력 표시
+    st.markdown(f"#### 🔥 현재 응원력: **{st.session_state['cheer_power']}점**")
+    if st.session_state["cheer_power"] >= 20:
+        st.markdown("🏆 당신은 이제 **전설의 오렌지팬** 입니다!!")
+    elif st.session_state["cheer_power"] >= 10:
+        st.markdown("🔥 당신은 이제 **불꽃 응원단원** 입니다!")
+    elif st.session_state["cheer_power"] >= 5:
+        st.markdown("💪 당신은 이제 **이글스 루키 팬** 입니다!")
+
     st.markdown("---")
+    # 실시간 피드
     st.markdown("<h2 style='text-align:center;'>📣 실시간 팬 응원 피드 🧡</h2>", unsafe_allow_html=True)
-
     for i, message in enumerate(reversed(st.session_state["messages"][-30:])):
         bg_color = random.choice(["#fff2e6", "#ffe0b3", "#ffcc80"])
         st.markdown(
@@ -118,3 +136,9 @@ else:
             """,
             unsafe_allow_html=True,
         )
+
+# --- 유튜브 응원가 링크 ---
+st.markdown("---")
+st.markdown("### 🎵 응원가 들으러 가기 (공식 유튜브)")
+st.markdown("[▶️ 한화이글스 공식 응원가 재생목록](https://www.youtube.com/playlist?list=PLSPCeQQykYWgRwqkj1_OGNEjreOK-BVI2)")
+
