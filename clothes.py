@@ -50,16 +50,6 @@ if "messages" not in st.session_state:
 if "cheer_power" not in st.session_state:
     st.session_state["cheer_power"] = 0
 
-# --- 우승 카운트다운 (예: 한국시리즈 첫 경기 날짜) ---
-# 원하는 날짜로 설정하면 돼
-target_date = datetime(2025, 10, 25)  # 예시
-now = datetime.now()
-delta = target_date - now
-days_left = delta.days if delta.days >= 0 else 0
-st.markdown(f"### 🏁 우승까지 D-{days_left}일 남았다!!")
-
-st.markdown("---")
-
 # --- 응원 문구 랜덤 추천 ---
 random_cheers = [
     "류현진 오늘 완봉 가자🔥", "정은원 홈런 예감🍊", "한화는 질 수 없다💪",
@@ -75,7 +65,7 @@ random_cheers = [
 ]
 if st.button("🎰 응원 문구 뽑기"):
     cheer_pick = random.choice(random_cheers)
-    st.markdown(f"### 랜덤 추천 문구 → **{cheer_pick}**")
+    st.markdown(f"**{cheer_pick}**")
 
 st.markdown("---")
 
