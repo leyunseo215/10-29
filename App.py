@@ -21,33 +21,52 @@ def go_to(page):
     st.session_state.page = page
 
 # ---------------------------
-# 데이터: 탄소 배출 예시
+# 데이터 불러오기 (네가 올린 파일)
 # ---------------------------
-data = pd.DataFrame({
-    "국가": ["중국", "미국", "인도", "한국", "일본"],
-    "CO2(억 톤)": [100, 50, 30, 7, 12],
-    "ISO": ["CHN", "USA", "IND", "KOR", "JPN"]
-})
+df = pd.read_csv("TalkFile_World.csv.csv")
+
+# 최신 연도 데이터만 선택
+latest_year = df["year"].max()
+latest_data = df[df["year"] == latest_year]
+
+# NaN 제거 및 단위 변환
+latest_data = latest_data[["country", "iso_code", "year", "co2", "gdp", "population", "co2_per_capita"]].dropna()
+latest_data.rename(columns={
+    "country": "국가",
+    "iso_code": "ISO",
+    "co2": "CO₂ 배출량(백만톤)",
+    "co2_per_capita": "1인당 CO₂(톤)",
+    "population": "인구(명)",
+    "gdp": "GDP(달러)"
+}, inplace=True)
 
 # ---------------------------
-# 첫 화면: 탄소 배출 지도
+# 첫 화면: 지도 시각화
 # ---------------------------
 if st.session_state.page == "start":
     st.title("🌍 지구 키우기 🌱💚")
     st.markdown("""
-    지구의 탄소 배출량을 확인하고, 작은 실천으로 지구를 행복하게 만들어보세요! 🎉
+    전 세계 나라별 CO₂ 배출 현황을 확인하고,  
+    **마우스를 올려 각 나라의 세부 정보를 살펴보세요!** 🌏
     """)
 
-    # Plotly 지도 시각화
     fig = px.choropleth(
-        data, locations="ISO",
-        color="CO2(억 톤)",
+        latest_data,
+        locations="ISO",
+        color="CO₂ 배출량(백만톤)",
         hover_name="국가",
+        hover_data={
+            "1인당 CO₂(톤)": True,
+            "GDP(달러)": True,
+            "인구(명)": True
+        },
         color_continuous_scale="Reds",
-        labels={"CO2(억 톤)": "CO2 배출량"}
+        labels={"CO₂ 배출량(백만톤)": "CO₂ 배출량"},
+        title=f"{latest_year}년 세계 CO₂ 배출 지도"
     )
-    fig.update_layout(height=500)
-    st.plotly_chart(fig)
+
+    fig.update_layout(height=600)
+    st.plotly_chart(fig, use_container_width=True)
 
     st.button("🌱 환경 실천하러 가기", on_click=go_to, args=("action",))
 
@@ -70,15 +89,13 @@ elif st.session_state.page == "action":
             if st.button(action):
                 st.session_state.score += points
                 st.session_state.actions.append(action.split(" ")[0])
-                st.balloons()  # 🎉 폭발 효과
+                st.balloons()
                 st.success(f"{action.split()[0]} 실천 완료! 💚🌿✨")
 
-    # 행복도 계산
     st.subheader(f"현재 점수: {st.session_state.score}")
     happiness = min(st.session_state.score / 50, 1.0)
     st.progress(happiness)
 
-    # 지구 감정 변화
     st.header("🌍 지구 감정")
     if happiness < 0.3:
         st.markdown("😢 슬퍼하는 지구...")
