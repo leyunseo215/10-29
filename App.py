@@ -1,6 +1,8 @@
 import streamlit as st
+import pandas as pd
+import plotly.express as px
 
-st.set_page_config(page_title="🌍 지구 키우기", layout="centered")
+st.set_page_config(page_title="🌍 지구 키우기", layout="wide")
 
 # ---------------------------
 # 페이지 상태 초기화
@@ -13,28 +15,40 @@ if "actions" not in st.session_state:
     st.session_state.actions = []
 
 # ---------------------------
-# 화면 전환 함수
+# 페이지 전환 함수
 # ---------------------------
 def go_to(page):
     st.session_state.page = page
 
 # ---------------------------
-# 첫 화면: 지구 상태 + 탄소 배출 지도
+# 데이터: 탄소 배출 예시
+# ---------------------------
+data = pd.DataFrame({
+    "국가": ["중국", "미국", "인도", "한국", "일본"],
+    "CO2(억 톤)": [100, 50, 30, 7, 12],
+    "ISO": ["CHN", "USA", "IND", "KOR", "JPN"]
+})
+
+# ---------------------------
+# 첫 화면: 탄소 배출 지도
 # ---------------------------
 if st.session_state.page == "start":
-    st.title("🌍 지구 키우기 🌱")
+    st.title("🌍 지구 키우기 🌱💚")
     st.markdown("""
-    지구의 탄소 배출량이 심각합니다!  
-    🌏 아래 지도를 클릭해 자세히 볼 수 있어요.
+    지구의 탄소 배출량을 확인하고, 작은 실천으로 지구를 행복하게 만들어보세요! 🎉
     """)
-    st.image("world_map.png", caption="🌏 탄소 배출량 지도", use_column_width=True)
-    if st.button("자세히 보기"):
-        st.markdown("""
-        예시 데이터:  
-        - 중국: 10억 톤 CO2 🌬️  
-        - 미국: 5억 톤 CO2 🌬️  
-        - 한국: 7천만 톤 CO2 🌬️  
-        """)
+
+    # Plotly 지도 시각화
+    fig = px.choropleth(
+        data, locations="ISO",
+        color="CO2(억 톤)",
+        hover_name="국가",
+        color_continuous_scale="Reds",
+        labels={"CO2(억 톤)": "CO2 배출량"}
+    )
+    fig.update_layout(height=500)
+    st.plotly_chart(fig)
+
     st.button("🌱 환경 실천하러 가기", on_click=go_to, args=("action",))
 
 # ---------------------------
@@ -42,7 +56,7 @@ if st.session_state.page == "start":
 # ---------------------------
 elif st.session_state.page == "action":
     st.header("🌱 환경 행동으로 지구를 행복하게 해주세요!")
-    
+
     actions_dict = {
         "분리수거 ♻️ (+5)": 5,
         "텀블러 사용 ☕ (+3)": 3,
@@ -56,7 +70,8 @@ elif st.session_state.page == "action":
             if st.button(action):
                 st.session_state.score += points
                 st.session_state.actions.append(action.split(" ")[0])
-                st.balloons()  # 이모티콘 폭발
+                st.balloons()  # 🎉 폭발 효과
+                st.success(f"{action.split()[0]} 실천 완료! 💚🌿✨")
 
     # 행복도 계산
     st.subheader(f"현재 점수: {st.session_state.score}")
@@ -72,7 +87,6 @@ elif st.session_state.page == "action":
     else:
         st.markdown("😁🌿💚 행복한 지구! 지구가 춤춰요! 💃🎉✨")
 
-    # 화면 이동
     st.button("📋 행동 기록 & 미션 보기", on_click=go_to, args=("mission",))
 
 # ---------------------------
